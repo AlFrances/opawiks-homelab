@@ -3,97 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Movies | Opawiks Homelab</title>
-  <meta name="robots" content="noindex">
+  <title>Opawiks Homelab</title>
+  <meta name="description" content="Opawiks Homelab: a self-hosted site for photos, ROMs, movies, and a CV.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="wrapper header-row">
-      <a class="logo" href="/">Opawiks Homelab</a>
+      <a class="logo" href="#top">Opawiks Homelab</a>
       <nav aria-label="Main">
-        <a href="/photos/">Photos</a>
-        <a href="/roms/">ROMs</a>
-        <a href="/movies/" aria-current="page">Movies</a>
-        <form method="post" action="/logout">
-          <button class="logout-button" type="submit">Log out</button>
-        </form>
+        <a href="#photos">Photos</a>
+        <a href="#roms">ROMs</a>
+        <a href="#movies">Movies</a>
+        <a href="#about">About me</a>
       </nav>
     </div>
   </header>
 
-  <main class="wrapper roms-page">
-    <h1>Movies</h1>
-    <p class="roms-summary" id="movie-summary">Loading your library...</p>
+  <main id="top">
+    <section class="hero">
+      <div class="wrapper hero-row">
+        <div class="hero-text">
+          <h1>Opawiks Homelab</h1>
+          <p>I'm Frances, and I'm learning web development. This site is my first real project, and where I keep my photos, ROMs, movies, and CV.</p>
+          <a class="button" href="#photos">Browse my collections</a>
+        </div>
+        <svg id="hub" viewBox="0 0 600 600" role="group" aria-label="Open a collection"></svg>
+      </div>
+    </section>
 
-    <div class="roms-tools">
-      <input type="search" id="movie-search" placeholder="Search movies" aria-label="Search movies">
-    </div>
+    <section class="collections" aria-labelledby="collections-title">
+      <div class="wrapper">
+        <h2 id="collections-title">Collections</h2>
+        <div class="grid">
+          <article class="card" id="photos">
+            <h3>Photos</h3>
+            <p>View and download my photo collection.</p>
+            <p class="access">Password required</p>
+            <a class="card-link" href="photos/">Open photos</a>
+          </article>
 
-    <div class="movie-grid" id="movie-grid"></div>
+          <article class="card" id="roms">
+            <h3>ROMs</h3>
+            <p>My personal game library, organized by console.</p>
+            <p class="access">Password required</p>
+            <a class="card-link" href="roms/">Open ROMs</a>
+          </article>
+
+          <article class="card" id="movies">
+            <h3>Movies</h3>
+            <p>Watch films from my personal library in the browser.</p>
+            <p class="access">Password required</p>
+            <a class="card-link" href="movies/">Open movies</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <div class="wrapper about-row">
+        <div>
+          <h2>About me</h2>
+          <p>A short summary of your studies, skills, and experience goes here.</p>
+        </div>
+        <div class="about-links">
+          <a href="https://www.linkedin.com/in/al-frances-doydoy" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://github.com/AlFrances" target="_blank" rel="noopener">GitHub</a>
+          <a href="cv.pdf" target="_blank" rel="noopener">View CV</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <script>
-    // Gets the movie list from the server, which asks Jellyfin.
-    const grid = document.getElementById("movie-grid");
-    const summary = document.getElementById("movie-summary");
-    const search = document.getElementById("movie-search");
-    let movies = [];
-    let jellyfin = "";
+  <footer>
+    <div class="wrapper">© 2026 Opawiks Homelab</div>
+  </footer>
 
-    // Makes one card per movie. Clicking it opens the movie in Jellyfin.
-    function show(list) {
-      grid.innerHTML = "";
-      for (const movie of list) {
-        const card = document.createElement("a");
-        card.className = "movie-card";
-        card.href = `${jellyfin}/web/#/details?id=${movie.id}&serverId=${movie.server}`;
-        card.target = "_blank";
-        card.rel = "noopener";
-
-        const poster = document.createElement("div");
-        poster.className = "movie-poster";
-        const image = document.createElement("img");
-        image.src = `/movies/poster/${movie.id}`;
-        image.alt = "";
-        image.loading = "lazy";
-        image.onerror = () => image.remove(); // No poster: keep the empty box
-        poster.append(image);
-
-        const name = document.createElement("span");
-        name.className = "movie-name";
-        name.textContent = movie.year ? `${movie.name} (${movie.year})` : movie.name;
-
-        card.append(poster, name);
-        grid.append(card);
-      }
-    }
-
-    fetch("/movies/api")
-      .then((response) => {
-        if (!response.ok) throw new Error();
-        return response.json();
-      })
-      .then((data) => {
-        jellyfin = data.jellyfin;
-        movies = data.movies;
-        const word = movies.length === 1 ? "movie" : "movies";
-        summary.textContent = `${movies.length} ${word}. Click one to watch it in Jellyfin.`;
-        show(movies);
-      })
-      .catch(() => {
-        summary.textContent = "Couldn't reach Jellyfin. Check that it's running.";
-      });
-
-    search.addEventListener("input", () => {
-      const text = search.value.trim().toLowerCase();
-      show(movies.filter((movie) => movie.name.toLowerCase().includes(text)));
-    });
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>
