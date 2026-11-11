@@ -9,12 +9,15 @@ import hashlib
 import hmac
 import html
 import http.server
+import json
 import os
 import posixpath
+import re
 import secrets
 import sys
 import threading
 import time
+import urllib.request
 from http.cookies import SimpleCookie
 from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlsplit
@@ -25,6 +28,7 @@ MAX_TRIES = 10
 LOCK_SECONDS = 2 * 60
 SESSION_SECONDS = 12 * 60 * 60  # Longest a login lasts if nobody leaves the private pages
 USE_HTTPS = False  # Set to True once the site runs on https://
+JELLYFIN_URL = "http://192.168.1.56:8096"  # Where Jellyfin runs
 
 # Only these can be opened. Everything else (like this file) gives a 404.
 PRIVATE_FOLDERS = {"roms", "photos", "movies"}
@@ -32,6 +36,7 @@ PUBLIC_FILES = {"main_page.html", "style.css", "main.js", "cv.pdf"}
 
 SITE = Path(__file__).resolve().parent
 HASH_FILE = SITE / "password.hash"
+JELLYFIN_KEY_FILE = SITE / "jellyfin.key"  # Jellyfin API key, never put on GitHub
 ITERATIONS = 600_000
 COOKIE = "session"
 
@@ -131,6 +136,17 @@ def safe_next(value):
     return quote(path) if path and is_private(path) else "/roms/"
 
 
+def jellyfin(path):
+    """Asks Jellyfin for something. The API key stays here on the server."""
+    key = JELLYFIN_KEY_FILE.read_text().strip()
+    request = urllib.request.Request(
+        JELLYFIN_URL + path,
+        headers={"Authorization": f'MediaBrowser Token="{key}"'},
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return response.read(), response.headers.get("Content-Type", "")
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(SITE), **kwargs)
@@ -186,6 +202,49 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         secure = "; Secure" if USE_HTTPS else ""
         return f"{COOKIE}={value}; Path=/{age}; HttpOnly; SameSite=Lax{secure}"
 
+    def send_bytes(self, body, content_type):
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(body)
+
+    def handle_movies(self, path):
+        """Movies come from Jellyfin. Returns the page to show, or None if already answered."""
+        if path in ("/movies", "/movies/"):
+            return "/movies_page.html"
+        try:
+            if path == "/movies/api":
+                data, _ = jellyfin(
+                    "/Items?IncludeItemTypes=Movie&Recursive=true&SortBy=SortName&Fields=ProductionYear"
+                )
+                movies = [
+                    {
+                        "id": item["Id"],
+                        "name": item.get("Name", ""),
+                        "year": item.get("ProductionYear"),
+                        "server": item.get("ServerId", ""),
+                    }
+                    for item in json.loads(data).get("Items", [])
+                ]
+                body = json.dumps({"jellyfin": JELLYFIN_URL, "movies": movies}).encode()
+                self.send_bytes(body, "application/json")
+                return None
+            match = re.fullmatch(r"/movies/poster/([0-9a-f]{32})", path)
+            if match:
+                data, content_type = jellyfin(f"/Items/{match.group(1)}/Images/Primary?maxHeight=450")
+                if not content_type.startswith("image/"):
+                    self.send_error(502)
+                    return None
+                self.send_bytes(data, content_type)
+                return None
+        except Exception:
+            self.send_error(502, "Couldn't reach Jellyfin")
+            return None
+        self.send_error(404)
+        return None
+
     def send_login(self, status=200, message="", next_path="/roms/"):
         wait = seconds_locked(self.client_ip())
         if wait:
@@ -232,6 +291,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.redirect("/login?next=" + quote(path, safe=""))
                 return False
             self.private_response = True
+            if path.strip("/").split("/")[0] == "movies":
+                path = self.handle_movies(path)
+                if path is None:
+                    return False
         elif path.lstrip("/") not in PUBLIC_FILES:
             self.send_error(404)
             return False
