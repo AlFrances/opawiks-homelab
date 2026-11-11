@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in | Opawiks Homelab</title>
+  <meta name="robots" content="noindex">
+  {{refresh}}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrapper header-row">
+      <a class="logo" href="/">Opawiks Homelab</a>
+    </div>
+  </header>
+
+  <main class="wrapper login-page">
+    <div class="login-frame">
+    <form class="login-card" method="post" action="/login">
+      <h1>Password required</h1>
+      <input type="hidden" name="next" value="{{next}}">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required autofocus {{disabled}}>
+      <p class="login-message" role="alert">{{message}}</p>
+      <button class="button" type="submit" {{disabled}}>Log in</button>
+    </form>
+    </div>
+  </main>
+</body>
+</html>

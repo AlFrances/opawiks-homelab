@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opawiks Homelab</title>
+  <meta name="description" content="Opawiks Homelab: a self-hosted site for photos, ROMs, movies, and a CV.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrapper header-row">
+      <a class="logo" href="#top">Opawiks Homelab</a>
+      <nav aria-label="Main">
+        <a href="#photos">Photos</a>
+        <a href="#roms">ROMs</a>
+        <a href="#movies">Movies</a>
+        <a href="#about">About me</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrapper hero-row">
+        <div class="hero-text">
+          <h1>Opawiks Homelab</h1>
+          <p>I'm Frances, and I'm learning web development. This site is my first real project, and where I keep my photos, ROMs, movies, and CV.</p>
+          <a class="button" href="#photos">Browse my collections</a>
+        </div>
+        <svg id="hub" viewBox="0 0 600 600" role="group" aria-label="Open a collection"></svg>
+      </div>
+    </section>
+
+    <section class="collections" aria-labelledby="collections-title">
+      <div class="wrapper">
+        <h2 id="collections-title">Collections</h2>
+        <div class="grid">
+          <article class="card" id="photos">
+            <h3>Photos</h3>
+            <p>View and download my photo collection.</p>
+            <p class="access">Password required</p>
+            <a class="card-link" href="photos/">Open photos</a>
+          </article>
+
+          <article class="card" id="roms">
+            <h3>ROMs</h3>
+            <p>My personal game library, organized by console.</p>
+            <p class="access">Password required</p>
+            <a class="card-link" href="roms/">Open ROMs</a>
+          </article>
+
+          <article class="card" id="movies">
+            <h3>Movies</h3>
+            <p>Watch films from my personal library in the browser.</p>
+            <p class="access">Password required</p>
+            <a class="card-link" href="movies/">Open movies</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <div class="wrapper about-row">
+        <div>
+          <h2>About me</h2>
+          <p>A short summary of your studies, skills, and experience goes here.</p>
+        </div>
+        <div class="about-links">
+          <a href="https://www.linkedin.com/in/al-frances-doydoy" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://github.com/AlFrances" target="_blank" rel="noopener">GitHub</a>
+          <a href="cv.pdf" target="_blank" rel="noopener">View CV</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrapper">© 2026 Opawiks Homelab</div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
